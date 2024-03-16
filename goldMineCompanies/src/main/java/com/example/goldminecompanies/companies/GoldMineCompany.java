@@ -1,8 +1,13 @@
 package com.example.goldminecompanies.companies;
 
+import com.example.goldminecompanies.request.GoldStatusRequest;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,11 +16,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 @Setter
 public class GoldMineCompany {
-    protected String name;
-    protected String country;
-    protected String foundingDate;
-    protected int goldMinerCount;
-    protected AtomicInteger goldMineReservesKilograms;
+    private String name;
+    private String country;
+    private String foundingDate;
+    private int goldMinerCount;
+    private AtomicInteger goldMineReservesKilograms;
+    private WebClient webClient;
 
     public static GoldMineCompany of(String name,
                                      String country,
@@ -31,6 +37,12 @@ public class GoldMineCompany {
         goldMineCompany.setFoundingDate(foundingDate);
         goldMineCompany.setGoldMinerCount(goldMinerCount);
         goldMineCompany.setGoldMineReservesKilograms(atomicGoldMineReservesKilograms);
+        goldMineCompany.setWebClient(WebClient
+                .builder()
+                .baseUrl("http://localhost:8080")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build()
+        );
 
         return goldMineCompany;
     }
@@ -41,6 +53,19 @@ public class GoldMineCompany {
         if (afterMiningKilograms < 0) return;
         this.goldMineReservesKilograms.set(afterMiningKilograms);
         System.out.println(String.format("[%s] %d 광부가 금을 채굴함 %d → %d", name, Thread.currentThread().getId(), beforeMiningKilograms, afterMiningKilograms));
+
+        GoldStatusRequest goldStatusRequest = GoldStatusRequest.builder()
+                .name(this.getName())
+                .country(this.getCountry())
+                .goldMiningKilograms(1)
+                .build();
+
+        webClient.post()
+                .uri("/gold-status")
+                .body(Mono.just(goldStatusRequest), GoldStatusRequest.class)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
     }
 
     public void startMining() {
