@@ -1,8 +1,7 @@
 package com.example.worldgoldassociation.domain.goldStatus;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import com.example.worldgoldassociation.request.GoldStatusRequest;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +17,7 @@ import lombok.experimental.SuperBuilder;
 public class GoldStatus {
 
     @Id
+    @GeneratedValue( strategy = GenerationType.IDENTITY )
     @Column(name = "NO", nullable = false)
     private Long no;
 
@@ -30,11 +30,11 @@ public class GoldStatus {
     @Column(name = "GOLD_MINING_KILOGRAMS", nullable = false)
     private int goldMiningKilograms;
 
-    public static GoldStatus of(String name, String country, int goldMiningKilograms) {
+    public static GoldStatus of(GoldStatusRequest goldStatusRequest) {
         return GoldStatus.builder()
-                .name(name)
-                .country(country)
-                .goldMiningKilograms(goldMiningKilograms)
+                .name(goldStatusRequest.getName())
+                .country(goldStatusRequest.getCountry())
+                .goldMiningKilograms(goldStatusRequest.getGoldMiningKilograms())
                 .build();
     }
 }

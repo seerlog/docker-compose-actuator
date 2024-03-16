@@ -1,4 +1,4 @@
-package com.example.worldgoldassociation.dto;
+package com.example.worldgoldassociation.request;
 
 import lombok.Getter;
 import lombok.Setter;
